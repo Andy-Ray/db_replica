@@ -1,0 +1,28 @@
+version: '3.8'
+services:
+
+  db_m:
+    build: ./master
+    # restart: always
+    # volumes:
+    #   - ./:/app
+    #   - db_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - 127.0.0.1:${DB_LOCAL_PORT_M}:5432
+
+  db_s:
+    build: ./slave
+    # restart: always
+    # volumes:
+    #   - ./:/app
+    #   - db_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - 127.0.0.1:${DB_LOCAL_PORT_S}:5432 
+  
+
