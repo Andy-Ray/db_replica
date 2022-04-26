@@ -4,9 +4,9 @@ services:
   db_m:
     build: ./master
     # restart: always
-    # volumes:
-    #   - ./:/app
-    #   - db_data:/var/lib/postgresql/data
+    volumes:
+      # - ./master/data:/var/lib/postgresql/data
+      - ./master/data:/var/lib/postgresql/data
       # - ./master/pg_hba.conf:/var/lib/postgresql/data/pg_hba.conf
       # - ./master/postgresql.conf:/var/lib/postgresql/data/postgresql.conf
 
@@ -19,15 +19,12 @@ services:
   db_s:
     build: ./slave
     # restart: always
-    # volumes:
-    #   - ./:/app
-    #   - db_data:/var/lib/postgresql/data
+    volumes:
+      - ./slave/data:/var/lib/postgresql/data
       # - ./slave/pg_hba.conf:/var/lib/postgresql/data/pg_hba.conf
       # - ./slave/postgresql.conf:/var/lib/postgresql/data/postgresql.conf
     environment:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
     ports:
-      - 127.0.0.1:${DB_LOCAL_PORT_S}:5432 
-  
-
+      - 127.0.0.1:${DB_LOCAL_PORT_S}:5432
