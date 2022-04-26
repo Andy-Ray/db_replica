@@ -7,6 +7,9 @@ services:
     # volumes:
     #   - ./:/app
     #   - db_data:/var/lib/postgresql/data
+      # - ./master/pg_hba.conf:/var/lib/postgresql/data/pg_hba.conf
+      # - ./master/postgresql.conf:/var/lib/postgresql/data/postgresql.conf
+
     environment:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
@@ -19,6 +22,8 @@ services:
     # volumes:
     #   - ./:/app
     #   - db_data:/var/lib/postgresql/data
+      # - ./slave/pg_hba.conf:/var/lib/postgresql/data/pg_hba.conf
+      # - ./slave/postgresql.conf:/var/lib/postgresql/data/postgresql.conf
     environment:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}

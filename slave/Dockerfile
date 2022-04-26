@@ -2,29 +2,36 @@ FROM postgres:12
 
 
 
-#
-# Setup configuration & restart
-#
-# RUN /bin/echo -e "                                           \
-#     host    all             all     0.0.0.0/0   md5   \n \
-#     host    replication     all     0.0.0.0/0   trust \n \
-#     " >> /etc/postgresql/9.1/main/pg_hba.conf                \
-#     && /bin/echo -e "                                        \
-#     listen_addresses = '*'                            \n \
-#     port = 5432                                       \n \
-#     wal_level = hot_standby                           \n \
-#     max_wal_senders = 3                               \n \
-#     wal_keep_segments = 256                           \n \
-#     " >> /etc/postgresql/9.1/main/postgresql.conf            \
-#     && /etc/init.d/postgresql restart
+# #
+# # Install postgresql
+# #
+# RUN apt-get update && apt-get install -y postgresql-9.1
 
 # #
-# # Create the test suite user and database
+# # Setup configuration
 # #
+# RUN /bin/echo -e "                                               \
+#         host    all             all     0.0.0.0/0   md5      \n  \
+#         host    replication     all     0.0.0.0/0   trust    \n  \
+#     " >> /etc/postgresql/9.1/main/pg_hba.conf                    \
+#     && /bin/echo -e "                                            \
+#         listen_addresses = '*'                               \n  \
+#         port=5432                                            \n  \
+#         hot_standby = on                                     \n  \
+#     " >> /etc/postgresql/9.1/main/postgresql.conf                \
+#     && /bin/echo -e "                                            \
+#         standby_mode='on'                                    \n  \
+#         primary_conninfo = 'host=pg_master port=5432'        \n  \
+#         trigger_file = '/tmp/trigger_file0'                  \n  \
+#     " > /var/lib/postgresql/9.1/main/recovery.conf
+
+# #
+# # Add startup script. This will perform initial replication and start
+# # the server. This must be run with the master server running and linked
+# # at pg_master
+# #
+# COPY run.sh /var/lib/postgresql/9.1/run.sh
+
 # USER postgres
-# RUN /etc/init.d/postgresql start                                              \
-#     && psql -c "CREATE USER testsuite WITH UNENCRYPTED PASSWORD 'testsuite';" \
-#     && psql -c "CREATE DATABASE testsuite WITH OWNER testsuite;"
-
 # EXPOSE 5432
-# CMD /usr/lib/postgresql/9.1/bin/postgres -D /var/lib/postgresql/9.1/main -c config_file=/etc/postgresql/9.1/main/postgresql.conf
+# CMD /var/lib/postgresql/9.1/run.sh
