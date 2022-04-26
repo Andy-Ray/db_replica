@@ -1,33 +1,39 @@
 version: '3.8'
 services:
-
-  db_m:
-    build: ./master
-    # restart: always
-    volumes:
-      - ./:/app
-      - ./master:/db_conf
-      - ./master/data:/var/lib/postgresql/data
-      - ./db_configure.sh:/docker-entrypoint-initdb.d/db_configure.sh
-
-    environment:
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_NAME}
+  db-master:
+    image: docker.io/bitnami/postgresql:12
     ports:
-      - 127.0.0.1:${DB_LOCAL_PORT_M}:5432
-
-  db_s:
-    build: ./slave
-    # restart: always
+      - '5432'
     volumes:
-      - ./:/app
-      - ./slave:/db_conf
-      - ./slave/data:/var/lib/postgresql/data
-      - ./db_configure.sh:/docker-entrypoint-initdb.d/db_configure.sh
+      - db_master_data:/bitnami/postgresql
     environment:
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_NAME}
+      - POSTGRESQL_REPLICATION_MODE=master
+      - POSTGRESQL_REPLICATION_USER=${DB_REPL_USER}
+      - POSTGRESQL_REPLICATION_PASSWORD=${DB_REPL_PASSWORD}
+      - POSTGRESQL_USERNAME=${DB_USER}
+      - POSTGRESQL_PASSWORD=${DB_PASSWORD}
+      - POSTGRESQL_DATABASE=${DB_NAME}
+      - ALLOW_EMPTY_PASSWORD=yes
+
+  db-slave:
+    image: docker.io/bitnami/postgresql:12
     ports:
-      - 127.0.0.1:${DB_LOCAL_PORT_S}:5432
+      - '5432'
     depends_on:
-      - db_m
+      - db-master
+    volumes:
+      - db_slave_data:/bitnami/postgresql
+    environment:
+      - POSTGRESQL_REPLICATION_MODE=slave
+      - POSTGRESQL_REPLICATION_USER=${DB_REPL_USER}
+      - POSTGRESQL_REPLICATION_PASSWORD=${DB_REPL_PASSWORD}
+      - POSTGRESQL_MASTER_HOST=db-master
+      - POSTGRESQL_PASSWORD=${DB_PASSWORD}
+      - POSTGRESQL_MASTER_PORT_NUMBER=5432
+      - ALLOW_EMPTY_PASSWORD=yes
+
+volumes:
+  db_master_data:
+    driver: local
+  db_slave_data:
+    driver: local
