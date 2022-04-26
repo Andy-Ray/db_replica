@@ -5,10 +5,10 @@ services:
     build: ./master
     # restart: always
     volumes:
-      # - ./master/data:/var/lib/postgresql/data
+      - ./:/app
+      - ./master:/db_conf
       - ./master/data:/var/lib/postgresql/data
-      # - ./master/pg_hba.conf:/var/lib/postgresql/data/pg_hba.conf
-      # - ./master/postgresql.conf:/var/lib/postgresql/data/postgresql.conf
+      - ./db_configure.sh:/docker-entrypoint-initdb.d/db_configure.sh
 
     environment:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
@@ -20,11 +20,14 @@ services:
     build: ./slave
     # restart: always
     volumes:
+      - ./:/app
+      - ./slave:/db_conf
       - ./slave/data:/var/lib/postgresql/data
-      # - ./slave/pg_hba.conf:/var/lib/postgresql/data/pg_hba.conf
-      # - ./slave/postgresql.conf:/var/lib/postgresql/data/postgresql.conf
+      - ./db_configure.sh:/docker-entrypoint-initdb.d/db_configure.sh
     environment:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
     ports:
       - 127.0.0.1:${DB_LOCAL_PORT_S}:5432
+    depends_on:
+      - db_m
